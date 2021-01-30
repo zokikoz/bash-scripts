@@ -1,0 +1,20 @@
+#!/bin/bash
+# Clear /IN and /OUT in homedirs
+
+#Перебираем пользователей
+for user in $(ls /home1/users | grep a0 ; ls /home1/users | grep a1 ; ls /home1/users | grep a2)
+do
+	if [[ $user != "a000001" ]]
+	then
+		cd /home1/users
+		cd $user
+		pwd
+		cd IN
+		rm *
+		cd ..
+		cd OUT
+		pwd
+		rm *
+	fi
+done
+exit 0

@@ -1,0 +1,51 @@
+#!/bin/bash
+# Unlock failed count script
+
+if [[ $1 = "-?" || $1 = "/?" || $1 = "-help" || $1 = "--help" ]]
+then
+	echo "Usage: unlockfail [-b]"
+	echo "-b     Don't show blocked counts, only failed"
+	exit 0
+fi
+
+fail_count=0
+date '+%d.%m.%Y %H:%M:%S'
+echo "-----------------------------"
+
+cd /opt/guard
+
+#Перебираем пользователей
+for user in $(ls /home1/users | grep a0 ; ls /home1/users | grep a1 ; ls /home1/users | grep a2)
+do
+	#Проверяем заблокирован ли пользователь
+	if [[ $(./gadmin -u $user | cut -d" " -f3) = "'Locked'" ]]
+		then
+		#Выбираем ожидаемое и полученное значение счетчика
+		expect=$(cat .auth_log | grep $user | tail -1 | cut -d E -f2 | cut -d" " -f2 | cut -d"'" -f2)
+		receive=$(cat .auth_log | grep $user | tail -1 | cut -d E -f2 | cut -d" " -f4 | cut -d"'" -f2)
+		#Проверяем отличаются ли ожидаемое и полученное значение на единицу, что говорит о сбое счетчика
+		if [[ $(($expect - $receive)) -eq 1 || $(($receive - $expect)) -eq 1 ]]
+			then
+			(( fail_count++ ))
+			echo $user "- Failed Count"
+			./gadmin -u $user -l -s $receive &> /dev/null
+			echo "Fixed:" $expect "=>" $receive
+			echo "-----------------------------"
+		else
+			if [[ $1 != "-b" ]]
+				then
+				echo $user "- Blocked Count"
+				echo "Expect:" $expect "Receive:" $receive
+				echo "-----------------------------"
+			fi
+		fi
+	fi
+done
+
+if [[ $fail_count -eq 0 ]]
+	then
+	echo No failed counts
+fi
+echo
+
+exit 0

@@ -1,0 +1,24 @@
+#!/bin/bash
+# Reserve copy for web server
+
+date '+%d.%m.%Y %H:%M:%S'
+#Останавливаем MySQL сервер
+/etc/init.d/mysql.server stop
+#Чистим резервный каталог
+rm /export/home1/reserve/*
+#Копируем и архивируем MySQL базу
+cd /export/home1/mysql
+tar cvf /export/home1/reserve/mysql.tar .
+gzip -v /export/home1/reserve/mysql.tar
+#Копируем и архивируем корень HTTP
+cd /export/home1/web
+tar cvf /export/home1/reserve/web.tar .
+gzip -v /export/home1/reserve/web.tar
+#Копируем и архивируем корень HTTPS
+cd /export/home1/web_secure
+tar cvf /export/home1/reserve/web.tar_secure .
+gzip -v /export/home1/reserve/web_secure.tar
+#Запускаем MySQL сервер
+/etc/init.d/mysql.server start
+
+exit 0

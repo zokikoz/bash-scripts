@@ -1,0 +1,41 @@
+#!/bin/bash
+# ulog-acctd parser
+
+#if [[ -e /var/log/checkproxy.lastrun ]]
+#then
+#    run=$(date +%m%y)
+#    lastrun=$(cat /var/log/checkproxy.lastrun)
+#    if [[ $run != $lastrun ]]
+#    then
+#	cp -f /var/log/ulog-acctd/account.log /var/log/ulog-acctd/account.log.lastmonth
+#	cat /dev/null > /var/log/ulog-acctd/account.log
+#    fi
+#fi
+#
+#date +%m%y > /var/log/checkproxy.lastrun
+
+for bytes in $(cat /var/log/ulog-acctd/account.log | cut -f9)
+do
+    summary_bytes=$(($summary_bytes+$bytes))
+done
+
+if [ $summary_bytes ]
+then
+    if (($summary_bytes >= 1024))
+    then
+        summary_kbytes=$(echo "scale=2; $summary_bytes/1024" | bc)
+        if (($summary_bytes >= 1048576 ))
+        then
+            summary_mbytes=$(echo "scale=2; $summary_bytes/1048576" | bc)
+    	    echo $summary_mbytes Mb "("$summary_kbytes" Kb)"
+        else
+    	    echo $summary_kbytes Kb "("$summary_bytes" bytes)"
+        fi
+    else
+    echo $summary_bytes
+    fi
+else
+echo No traffic
+fi
+
+exit 0
