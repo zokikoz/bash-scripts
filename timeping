@@ -1,0 +1,9 @@
+#!/usr/local/bin/bash
+while true
+    do
+    TIME=`date +%T`
+    PING=`ping -s 1016 -c 2 $1 | grep icmp | grep seq=1`
+    echo "[$TIME] $PING" >>/tmp/pingtime.log
+    echo "[$TIME] $PING"
+    sleep 2
+done
